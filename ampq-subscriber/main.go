@@ -8,17 +8,45 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"github.com/streadway/amqp"
+
+	// VSCode не видит пакеты
+	amqp "github.com/rabbitmq/amqp091-go"
+	yaml "gopkg.in/yaml.v3"
 )
 
-const (
-	amqpURI      = "amqp://guest:guest@localhost:5672/"
-	exchangeName = "my_exchange"
-	queueName    = "my_queue"
-	consumerTag  = "simple_consumer"
-)
+type Logger struct {
+	level string `yaml:"level"`
+}
+type RabbitMQ struct {
+	url string `yaml:"url"`
+	exchangeName string `yaml:"exchange"`
+	queueName string `yaml:"queue"`
+	routingKey string `yaml:"routing-key"`
+	consumerTag string `yaml:"consumer-tag"`	
+}
+
+type Config struct {
+	log Logger `yaml:"log"`
+	port     int    `yaml:"port"`
+	ampq RabbitMQ `yaml:"ampq"`	
+}
+
 
 func main() {
+
+ data, err := os.ReadFile("config.yaml")
+    if err != nil {
+        log.Fatalf("error: %v", err)
+    }
+
+    var config Config
+    err = yaml.Unmarshal(data, &config)
+    if err != nil {
+        log.Fatalf("error: %v", err)
+    }
+    
+    fmt.Printf("Server Configuration: %+v\n", config)
+
 	// Создаем контекст с отменой для управления жизненным циклом обработчика
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -27,8 +55,9 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	
 	// Запускаем обработчик сообщений в отдельной горутине
-	go messageHandler(ctx)
+	go messageHandler(ctx, config.ampq)
 
 	// Ожидаем сигнал или завершение работы обработчика
 	select {
@@ -41,11 +70,11 @@ func main() {
 	log.Println("Программа завершена.")
 }
 
-func messageHandler(ctx context.Context) {
+func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	fmt.Println("Обработчик сообщений ")
 
-	conn, err := amqp.Dial(amqpURI)
+	conn, err := amqp.Dial(config.url)
 	if err != nil {
 		log.Fatalf("Ошибка подключения к AMQP: %s", err)
 	}
@@ -58,7 +87,7 @@ func messageHandler(ctx context.Context) {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		exchangeName, // name
+		config.exchangeName, // name
 		"direct",     // type
 		true,         // durable
 		false,
@@ -71,7 +100,7 @@ func messageHandler(ctx context.Context) {
 	}
 
 	q, err := ch.QueueDeclare(
-		queueName, // name
+		config.queueName, // name
 		true,      // durable
 		false,     // delete when unused
 		false,     // exclusive
@@ -85,7 +114,7 @@ func messageHandler(ctx context.Context) {
 	err = ch.QueueBind(
 		q.Name,       // queue name
 		"",           // routing key
-		exchangeName, // exchange
+		config.exchangeName, // exchange
 		false,
 		nil,
 	)
@@ -95,7 +124,7 @@ func messageHandler(ctx context.Context) {
 
 	msgs, err := ch.Consume(
 		q.Name,      // queue
-		consumerTag, // consumer
+		config.consumerTag, // consumer
 		false,       // auto-ack
 		false,       // exclusive
 		false,       // no-local

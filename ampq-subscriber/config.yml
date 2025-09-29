@@ -1,0 +1,8 @@
+amqp:
+  url: amqp://guest:guest@localhost:5672/
+  exchange: my-exchange
+  queue: my-queue
+  routing-key: my-routing-key
+  consumer-tag: my-consumer
+log:
+  level: info
