@@ -17,7 +17,7 @@ FROM alpine:latest
 WORKDIR /root/
 # Копируем собранный бинарный файл из предыдущего этапа сборки
 COPY --from=builder /app/main .
-COPY --from=builder /app/config.yml .
+#COPY --from=builder /app/config.yml .
 
 # Порт, на котором будет работать приложение
 #EXPOSE 8080
