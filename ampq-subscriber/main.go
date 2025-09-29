@@ -14,20 +14,20 @@ import (
 )
 
 type Logger struct {
-	level string `yaml:"level"`
+	Level string `yaml:"level"`
 }
 type RabbitMQ struct {
-	url          string `yaml:"url"`
-	exchangeName string `yaml:"exchange"`
-	queueName    string `yaml:"queue"`
-	routingKey   string `yaml:"routing-key"`
-	consumerTag  string `yaml:"consumer-tag"`
+	Url          string `yaml:"url"`
+	ExchangeName string `yaml:"exchange"`
+	QueueName    string `yaml:"queue"`
+	RoutingKey   string `yaml:"routing-key"`
+	ConsumerTag  string `yaml:"consumer-tag"`
 }
 
 type Config struct {
-	log  Logger   `yaml:"log"`
-	port int      `yaml:"port"`
-	ampq RabbitMQ `yaml:"ampq"`
+	Log  Logger   `yaml:"log"`
+	Port int `yaml:"port"`
+	Ampq RabbitMQ `yaml:"rabbitmq"`
 }
 
 func main() {
@@ -36,8 +36,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
+	log.Printf("Server Configuration: %+v\n", string(data))
 
 	var config Config
+	// что-то нихера он не размаршаливает
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -54,7 +56,7 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// Запускаем обработчик сообщений в отдельной горутине
-	go messageHandler(ctx, config.ampq)
+	go messageHandler(ctx, config.Ampq)
 
 	// Ожидаем сигнал или завершение работы обработчика
 	select {
@@ -71,7 +73,7 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	fmt.Println("Обработчик сообщений ")
 
-	conn, err := amqp.Dial(config.url)
+	conn, err := amqp.Dial(config.Url)
 	if err != nil {
 		log.Fatalf("Ошибка подключения к AMQP: %s", err)
 	}
@@ -81,10 +83,10 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 	if err != nil {
 		log.Fatalf("Ошибка открытия канала: %s", err)
 	}
-	defer ch.Close()
+	//	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		config.exchangeName, // name
+		config.ExchangeName, // name
 		"direct",            // type
 		true,                // durable
 		false,
@@ -97,7 +99,7 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 	}
 
 	q, err := ch.QueueDeclare(
-		config.queueName, // name
+		config.QueueName, // name
 		true,             // durable
 		false,            // delete when unused
 		false,            // exclusive
@@ -111,7 +113,7 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 	err = ch.QueueBind(
 		q.Name,              // queue name
 		"",                  // routing key
-		config.exchangeName, // exchange
+		config.ExchangeName, // exchange
 		false,
 		nil,
 	)
@@ -121,7 +123,7 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	msgs, err := ch.Consume(
 		q.Name,             // queue
-		config.consumerTag, // consumer
+		config.ConsumerTag, // consumer
 		false,              // auto-ack
 		false,              // exclusive
 		false,              // no-local

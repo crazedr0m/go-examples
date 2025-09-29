@@ -1,8 +1,9 @@
-amqp:
-  url: amqp://guest:guest@localhost:5672/
-  exchange: my-exchange
-  queue: my-queue
-  routing-key: my-routing-key
-  consumer-tag: my-consumer
 log:
   level: info
+port: 8080
+rabbitmq:
+  url: amqp://ampq:ampq@rabbitmq:5672/
+  exchange: test-exchange
+  queue: test-queue
+  routing-key: test-routing-key
+  consumer-tag: test-consumer
