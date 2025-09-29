@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	// VSCode не видит пакеты
 	amqp "github.com/rabbitmq/amqp091-go"
 	yaml "gopkg.in/yaml.v3"
 )
@@ -18,34 +17,33 @@ type Logger struct {
 	level string `yaml:"level"`
 }
 type RabbitMQ struct {
-	url string `yaml:"url"`
+	url          string `yaml:"url"`
 	exchangeName string `yaml:"exchange"`
-	queueName string `yaml:"queue"`
-	routingKey string `yaml:"routing-key"`
-	consumerTag string `yaml:"consumer-tag"`	
+	queueName    string `yaml:"queue"`
+	routingKey   string `yaml:"routing-key"`
+	consumerTag  string `yaml:"consumer-tag"`
 }
 
 type Config struct {
-	log Logger `yaml:"log"`
-	port     int    `yaml:"port"`
-	ampq RabbitMQ `yaml:"ampq"`	
+	log  Logger   `yaml:"log"`
+	port int      `yaml:"port"`
+	ampq RabbitMQ `yaml:"ampq"`
 }
-
 
 func main() {
 
- data, err := os.ReadFile("config.yaml")
-    if err != nil {
-        log.Fatalf("error: %v", err)
-    }
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
 
-    var config Config
-    err = yaml.Unmarshal(data, &config)
-    if err != nil {
-        log.Fatalf("error: %v", err)
-    }
-    
-    fmt.Printf("Server Configuration: %+v\n", config)
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	fmt.Printf("Server Configuration: %+v\n", config)
 
 	// Создаем контекст с отменой для управления жизненным циклом обработчика
 	ctx, cancel := context.WithCancel(context.Background())
@@ -55,7 +53,6 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	
 	// Запускаем обработчик сообщений в отдельной горутине
 	go messageHandler(ctx, config.ampq)
 
@@ -88,8 +85,8 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	err = ch.ExchangeDeclare(
 		config.exchangeName, // name
-		"direct",     // type
-		true,         // durable
+		"direct",            // type
+		true,                // durable
 		false,
 		false,
 		false,
@@ -101,19 +98,19 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	q, err := ch.QueueDeclare(
 		config.queueName, // name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		true,             // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
 	)
 	if err != nil {
 		log.Fatalf("Ошибка объявления очереди: %s", err)
 	}
 
 	err = ch.QueueBind(
-		q.Name,       // queue name
-		"",           // routing key
+		q.Name,              // queue name
+		"",                  // routing key
 		config.exchangeName, // exchange
 		false,
 		nil,
@@ -123,13 +120,13 @@ func messageHandler(ctx context.Context, config RabbitMQ) {
 	}
 
 	msgs, err := ch.Consume(
-		q.Name,      // queue
+		q.Name,             // queue
 		config.consumerTag, // consumer
-		false,       // auto-ack
-		false,       // exclusive
-		false,       // no-local
-		false,       // no-wait
-		nil,         // args
+		false,              // auto-ack
+		false,              // exclusive
+		false,              // no-local
+		false,              // no-wait
+		nil,                // args
 	)
 	if err != nil {
 		log.Fatalf("Ошибка начала потребительской сессии: %s", err)

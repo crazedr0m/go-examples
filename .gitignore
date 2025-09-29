@@ -32,3 +32,5 @@ go.work.sum
 .idea/
 .vscode/
 .fleet
+
+ampq_example
