@@ -32,7 +32,7 @@ type Config struct {
 
 func main() {
 
-	data, err := os.ReadFile("config.yaml")
+	data, err := os.ReadFile("config.yml")
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

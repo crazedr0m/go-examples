@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  go-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # ports:
+    #   - "8080:8080" # Пробрасываем порт 8080 из контейнера на порт 8080 хоста
+    container_name: my-go-app-container
