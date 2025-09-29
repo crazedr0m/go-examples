@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     image: go-app-test
+    environment:
+      - RABBIT_URL=${RABBIT_URL}
     # ports:
     #   - "8080:8080" # Пробрасываем порт 8080 из контейнера на порт 8080 хоста
     container_name: go-app-container
@@ -27,11 +29,11 @@ services:
 #      - "${RABBIT_ETC}:/etc/rabbitmq"
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ampq
-      RABBITMQ_DEFAULT_PASS: ampq
-      RABBITMQ_DEFAULT_VHOST: test1
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBIT_VHOST}
     expose:
-      - 15692
+#      - 15692
       - 15672
       - 5672
     networks:
@@ -42,10 +44,10 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
-    # ports:
-    #  - "${RABBIT_HOST}:${RABBIT_METRIC}:15692" # prometheus metrics
+    ports:
+#     - "${RABBIT_HOST}:${RABBIT_METRIC}:15692" # prometheus metrics
     #  - "${RABBIT_HOST}:${RABBIT_MANAGE}:15672" # http managment
-    #  - "${RABBIT_HOST}:${RABBIT_MAIN}:5672" #
+      - "${RABBIT_HOST}:${RABBIT_MAIN}:5672" #
 
 networks:
   test-net:

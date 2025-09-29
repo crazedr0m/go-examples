@@ -38,11 +38,18 @@ func main() {
 	}
 	log.Printf("Server Configuration: %+v\n", string(data))
 
+
 	var config Config
 	// что-то нихера он не размаршаливает
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		log.Fatalf("error: %v", err)
+	}
+
+// Читаем переменную окружения
+	rabbitUrl := os.Getenv("RABBIT_URL");
+	if rabbitUrl != "" {
+		config.Ampq.Url = rabbitUrl
 	}
 
 	fmt.Printf("Server Configuration: %+v\n", config)
