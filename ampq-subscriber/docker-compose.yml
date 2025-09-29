@@ -5,8 +5,48 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: go-app-test
     # ports:
     #   - "8080:8080" # Пробрасываем порт 8080 из контейнера на порт 8080 хоста
-    container_name: my-go-app-container
+    container_name: go-app-container
+#    entrypoint: ["cat", "config.yml"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - test-net
     volumes:
-      - ./config.yml:/app/config.yml # не будем пересобирать контейнер, чтобы обновить конфиг
+      - ./config.yml:/root/config.yml # не будем пересобирать контейнер, чтобы обновить конфиг
+
+
+  rabbitmq:
+    container_name: test-rabbitmq
+    image: "rabbitmq:3.10.7-management"
+#    volumes:
+#      - "${RABBIT_DATA}:/var/lib/rabbitmq"
+#      - "${RABBIT_ETC}:/etc/rabbitmq"
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ampq
+      RABBITMQ_DEFAULT_PASS: ampq
+      RABBITMQ_DEFAULT_VHOST: test1
+    expose:
+      - 15692
+      - 15672
+      - 5672
+    networks:
+      - test-net
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    # ports:
+    #  - "${RABBIT_HOST}:${RABBIT_METRIC}:15692" # prometheus metrics
+    #  - "${RABBIT_HOST}:${RABBIT_MANAGE}:15672" # http managment
+    #  - "${RABBIT_HOST}:${RABBIT_MAIN}:5672" #
+
+networks:
+  test-net:
+    driver: bridge
