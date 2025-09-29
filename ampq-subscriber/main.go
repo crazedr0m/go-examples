@@ -13,9 +13,12 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+// Logger представляет конфигурацию логгера
 type Logger struct {
 	Level string `yaml:"level"`
 }
+
+// RabbitMQ представляет конфигурацию подключения к RabbitMQ
 type RabbitMQ struct {
 	Url          string `yaml:"url"`
 	ExchangeName string `yaml:"exchange"`
@@ -24,12 +27,16 @@ type RabbitMQ struct {
 	ConsumerTag  string `yaml:"consumer-tag"`
 }
 
+// Config представляет общую конфигурацию приложения
 type Config struct {
 	Log  Logger   `yaml:"log"`
-	Port int `yaml:"port"`
+	Port int      `yaml:"port"`
 	Ampq RabbitMQ `yaml:"rabbitmq"`
 }
 
+// main - точка входа в приложение.
+// Читает конфигурацию из файла config.yml и переменных окружения,
+// устанавливает обработчик сигналов и запускает обработчик сообщений RabbitMQ.
 func main() {
 
 	data, err := os.ReadFile("config.yml")
@@ -76,6 +83,10 @@ func main() {
 	log.Println("Программа завершена.")
 }
 
+// messageHandler обрабатывает сообщения из очереди RabbitMQ.
+// Устанавливает соединение с RabbitMQ, объявляет exchange и очередь,
+// привязывает очередь к exchange и начинает потреблять сообщения.
+// Обработка сообщений продолжается до отмены контекста.
 func messageHandler(ctx context.Context, config RabbitMQ) {
 
 	fmt.Println("Обработчик сообщений ")
