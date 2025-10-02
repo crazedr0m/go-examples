@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"4v2.com/ampq_example/amqp"
-	"4v2.com/ampq_example/config"
+	"ampq_example/amqp"
+	"ampq_example/config"
 )
 
 // App представляет основное приложение
@@ -41,10 +41,10 @@ func (a *App) Run(ctx context.Context) error {
 
 	// Ожидаем завершения контекста
 	<-ctx.Done()
-	
+
 	// Закрываем клиент
 	a.client.Close()
-	
+
 	return nil
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"4v2.com/ampq_example/config"
+	"ampq_example/config"
 )
 
 func TestNewApp(t *testing.T) {
@@ -23,17 +23,17 @@ func TestNewApp(t *testing.T) {
 			ConsumerTag:  "test-consumer",
 		},
 	}
-	
+
 	// Этот тест требует запущенного сервера RabbitMQ, поэтому мы просто проверим
 	// что сигнатура функции корректна и не паникует с валидной конфигурацией
 	// В реальной тестовой среде мы бы использовали моки
-	
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Errorf("NewApp panicked with valid config: %v", r)
 		}
 	}()
-	
+
 	// Примечание: Мы не можем actually создать приложение в тестах без запущенного сервера
 	// В реальном сценарии мы бы использовали внедрение зависимостей и моки
 	_ = testConfig
@@ -42,10 +42,10 @@ func TestNewApp(t *testing.T) {
 func TestAppRun(t *testing.T) {
 	// Тест, что приложение отвечает на отмену контекста
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Создаем мок приложения (мы просто используем минимальную структуру)
 	mockApp := &App{}
-	
+
 	// Запускаем приложение в горутине
 	done := make(chan bool, 1)
 	go func() {
@@ -53,11 +53,11 @@ func TestAppRun(t *testing.T) {
 		_ = mockApp.Run(ctx)
 		done <- true
 	}()
-	
+
 	// Отменяем контекст через короткое время
 	time.Sleep(10 * time.Millisecond)
 	cancel()
-	
+
 	// Ждем завершения приложения
 	select {
 	case <-done:

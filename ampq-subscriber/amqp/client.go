@@ -3,7 +3,8 @@ package amqp
 import (
 	"fmt"
 
-	"4v2.com/ampq_example/config"
+	"ampq_example/config"
+
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

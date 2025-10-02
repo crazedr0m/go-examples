@@ -3,7 +3,7 @@ package amqp
 import (
 	"testing"
 
-	"4v2.com/ampq_example/config"
+	"ampq_example/config"
 )
 
 func TestNewClient(t *testing.T) {

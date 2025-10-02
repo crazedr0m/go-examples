@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"4v2.com/ampq_example/config"
+	"ampq_example/config"
 )
 
 func TestMessageHandler(t *testing.T) {
 	// Тестируем, что сигнатура функции корректна
 	// Поскольку мы не можем легко замокать клиент AMQP, мы просто проверим
 	// что функция корректно обрабатывает отмену контекста
-	
+
 	// Создаем тестовую конфигурацию
 	testConfig := config.RabbitMQ{
 		Url:          "amqp://guest:guest@localhost:5672/",
@@ -21,13 +21,13 @@ func TestMessageHandler(t *testing.T) {
 		RoutingKey:   "test-routing-key",
 		ConsumerTag:  "test-consumer",
 	}
-	
+
 	// Создаем контекст, который можно отменить
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Создаем мок клиента (для этого теста передаем nil)
 	var mockClient *Client = nil
-	
+
 	// Запускаем обработчик в горутине
 	errChan := make(chan error, 1)
 	go func() {
@@ -35,11 +35,11 @@ func TestMessageHandler(t *testing.T) {
 		err := MessageHandler(ctx, mockClient, testConfig)
 		errChan <- err
 	}()
-	
+
 	// Отменяем контекст через короткое время
 	time.Sleep(10 * time.Millisecond)
 	cancel()
-	
+
 	// Ждем завершения обработчика
 	select {
 	case err := <-errChan:

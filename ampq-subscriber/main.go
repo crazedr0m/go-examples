@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"4v2.com/ampq_example/app"
-	"4v2.com/ampq_example/config"
+	"ampq_example/app"
+	"ampq_example/config"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ошибка загрузки конфигурации: %v", err)
 	}
-	
+
 	log.Printf("Server Configuration: %+v\n", cfg)
 
 	// Создаем контекст с отменой для управления жизненным циклом обработчика

@@ -1,4 +1,4 @@
-module 4v2.com/ampq_example
+module ampq_example
 
 go 1.24.6
 

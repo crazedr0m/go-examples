@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"log"
 
-	"4v2.com/ampq_example/config"
+	"ampq_example/config"
 )
 
 // MessageHandler обрабатывает сообщения из очереди RabbitMQ
 func MessageHandler(ctx context.Context, client *Client, config config.RabbitMQ) error {
 	// Получаем сообщения из очереди
 	msgs, err := client.ch.Consume(
-		config.QueueName,    // queue
-		config.ConsumerTag,  // consumer
-		false,               // auto-ack
-		false,               // exclusive
-		false,               // no-local
-		false,               // no-wait
-		nil,                 // args
+		config.QueueName,   // queue
+		config.ConsumerTag, // consumer
+		false,              // auto-ack
+		false,              // exclusive
+		false,              // no-local
+		false,              // no-wait
+		nil,                // args
 	)
 	if err != nil {
 		return fmt.Errorf("Ошибка начала потребительской сессии: %s", err)
