@@ -24,14 +24,15 @@ func main() {
 	defer cancel()
 
 	// Настраиваем обработчик сигналов
-	app.SetupSignalHandler(ctx, cancel)
-
 	// Создаем приложение
-	application, err := app.NewApp(cfg)
+	application, err := app.NewApp(cfg, "config.yml")
 	if err != nil {
 		log.Fatalf("Ошибка создания приложения: %v", err)
 	}
 	defer application.Close()
+
+	// Настраиваем обработчик сигналов
+	app.SetupSignalHandler(ctx, cancel, application)
 
 	fmt.Printf("Server Configuration: %+v\n", cfg)
 

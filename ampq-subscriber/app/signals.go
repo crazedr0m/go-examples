@@ -9,7 +9,7 @@ import (
 )
 
 // SetupSignalHandler настраивает обработчик сигналов операционной системы
-func SetupSignalHandler(ctx context.Context, cancel context.CancelFunc) {
+func SetupSignalHandler(ctx context.Context, cancel context.CancelFunc, app *App) {
 	// Создаем канал для обработки сигналов операционной системы
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -19,14 +19,30 @@ func SetupSignalHandler(ctx context.Context, cancel context.CancelFunc) {
 
 	// Запускаем горутину для обработки сигналов
 	go func() {
-		select {
-		case <-sigNotice:
-			log.Println("Получен сигнал какой-то, что-то надо сделать...")
-		case <-sigChan:
-			log.Println("Получен сигнал, завершение работы...")
-			cancel() // Отменяем контекст для завершения работы
-		case <-ctx.Done():
-			// Контекст уже отменен, ничего не делаем
+		for {
+			select {
+			case sig := <-sigNotice:
+				switch sig {
+				case syscall.SIGUSR1:
+					if app != nil {
+						log.Println("Получен сигнал SIGUSR1, перезагрузка конфигурации...")
+						if err := app.ReloadConfig(); err != nil {
+							log.Printf("Ошибка перезагрузки конфигурации: %s", err)
+						}
+					} else {
+						log.Println("Получен сигнал SIGUSR1, но App не инициализирован")
+					}
+				default:
+					log.Printf("Получен сигнал %s, но обработка не реализована", sig)
+				}
+			case <-sigChan:
+				log.Println("Получен сигнал, завершение работы...")
+				cancel() // Отменяем контекст для завершения работы
+				return
+			case <-ctx.Done():
+				// Контекст уже отменен, выходим из горутины
+				return
+			}
 		}
 	}()
 }

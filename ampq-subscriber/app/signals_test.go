@@ -12,8 +12,11 @@ func TestSetupSignalHandler(t *testing.T) {
 	// Тест, что обработчик сигналов отвечает на SIGTERM
 	ctx, cancel := context.WithCancel(context.Background())
 	
-	// Настраиваем обработчик сигналов
-	SetupSignalHandler(ctx, cancel)
+	// Для целей тестирования мы будем тестировать только SIGTERM/SIGINT
+	// так как SIGUSR1 требует полноценной реализации App
+	
+	// Настраиваем обработчик сигналов без App (только для SIGTERM/SIGINT)
+	SetupSignalHandler(ctx, cancel, nil)
 	
 	// Отправляем сигнал SIGTERM процессу
 	proc, err := os.FindProcess(os.Getpid())

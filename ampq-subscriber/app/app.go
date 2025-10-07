@@ -11,12 +11,13 @@ import (
 
 // App представляет основное приложение
 type App struct {
-	config *config.Config
-	client *amqp.Client
+	config     *config.Config
+	client     *amqp.Client
+	configPath string
 }
 
 // NewApp создает новое приложение
-func NewApp(config *config.Config) (*App, error) {
+func NewApp(config *config.Config, configPath string) (*App, error) {
 	// Создаем клиент RabbitMQ
 	client, err := amqp.NewClient(config.Ampq)
 	if err != nil {
@@ -24,8 +25,9 @@ func NewApp(config *config.Config) (*App, error) {
 	}
 
 	return &App{
-		config: config,
-		client: client,
+		config:     config,
+		client:     client,
+		configPath: configPath,
 	}, nil
 }
 
@@ -45,6 +47,24 @@ func (a *App) Run(ctx context.Context) error {
 	// Закрываем клиент
 	a.client.Close()
 
+	return nil
+}
+
+// ReloadConfig перезагружает конфигурацию из файла
+func (a *App) ReloadConfig() error {
+	log.Println("Перезагрузка конфигурации...")
+	
+	// Загружаем новую конфигурацию
+	newConfig, err := config.LoadConfig(a.configPath)
+	if err != nil {
+		return fmt.Errorf("Ошибка загрузки конфигурации: %s", err)
+	}
+	
+	// Обновляем конфигурацию в приложении
+	a.config = newConfig
+	log.Println("Конфигурация успешно перезагружена")
+	log.Printf("Новая конфигурация: %+v", newConfig)
+	
 	return nil
 }
 
