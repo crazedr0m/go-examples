@@ -7,11 +7,12 @@ type Logger struct {
 
 // RabbitMQ представляет конфигурацию подключения к RabbitMQ
 type RabbitMQ struct {
-	Url          string `yaml:"url"`
-	ExchangeName string `yaml:"exchange"`
-	QueueName    string `yaml:"queue"`
-	RoutingKey   string `yaml:"routing-key"`
-	ConsumerTag  string `yaml:"consumer-tag"`
+	Url             string `yaml:"url"`
+	ExchangeName    string `yaml:"exchange"`
+	QueueName       string `yaml:"queue"`
+	RoutingKey      string `yaml:"routing-key"`
+	ConsumerTag     string `yaml:"consumer-tag"`
+	MaxConcurrency  int    `yaml:"max-concurrency"`
 }
 
 // Config представляет общую конфигурацию приложения

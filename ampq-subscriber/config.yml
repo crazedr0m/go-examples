@@ -7,3 +7,4 @@ rabbitmq:
   queue: test-queue
   routing-key: test-routing-key
   consumer-tag: test-consumer
+  max-concurrency: 5

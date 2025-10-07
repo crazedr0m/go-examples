@@ -61,7 +61,7 @@ func NewClient(config config.RabbitMQ) (*Client, error) {
 	// Привязываем очередь к exchange
 	err = ch.QueueBind(
 		q.Name,              // queue name
-		"",                  // routing key
+		config.RoutingKey,   // routing key
 		config.ExchangeName, // exchange
 		false,               // no-wait
 		nil,                 // arguments
