@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	yaml "gopkg.in/yaml.v3"
@@ -12,6 +13,8 @@ func LoadConfig(filename string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf("Загружен конфиг из файла %s \n %s", filename, string(data))
 
 	var config Config
 	err = yaml.Unmarshal(data, &config)

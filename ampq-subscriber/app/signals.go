@@ -19,14 +19,18 @@ func SetupSignalHandler(ctx context.Context, cancel context.CancelFunc) {
 
 	// Запускаем горутину для обработки сигналов
 	go func() {
-		select {
-		case <-sigNotice:
-			log.Println("Получен сигнал какой-то, что-то надо сделать...")
-		case <-sigChan:
-			log.Println("Получен сигнал, завершение работы...")
-			cancel() // Отменяем контекст для завершения работы
-		case <-ctx.Done():
+		for {
+			select {
+			case signal := <-sigNotice:
+				log.Printf("Получен сигнал %s, что-то надо сделать...\n", signal)
+			case signal := <-sigChan:
+				log.Printf("Получен сигнал %s, завершение работы...\n", signal)
+				cancel() // Отменяем контекст для завершения работы
+				return
+			case <-ctx.Done():
 			// Контекст уже отменен, ничего не делаем
+				return
+			}
 		}
 	}()
 }
