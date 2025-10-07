@@ -1,23 +1,35 @@
 version: '3.8'
 
+# не будем каждый раз заново собирать контейнер для приложения
 services:
-  go-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: go-app-test
+  # собираем в контейнере, бинарник локально
+  go-app-build:
+    image: golang:1.24-alpine
+    working_dir: /app
+    container_name: go-app-build
+    entrypoint: sh -c "go build -o main ."
+    volumes:
+      - ./:/app
+
+  # запускаем локальный бинатрник в контейнере
+  go-app-run:
+#    image: ubuntu:latest
+    image: alpine:latest
     environment:
       - RABBIT_URL=${RABBIT_URL}
-    # ports:
-    #   - "8080:8080" # Пробрасываем порт 8080 из контейнера на порт 8080 хоста
-    container_name: go-app-container
-#    entrypoint: ["cat", "config.yml"]
+    container_name: go-app-run
+    entrypoint: ["./main"]
+    working_dir: /root
     depends_on:
       rabbitmq:
         condition: service_healthy
+      go-app-build:
+        condition: service_started
     networks:
       - test-net
     volumes:
+      - ./test.sh:/root/test.sh # не будем пересобирать контейнер, чтобы запустить новый вариант приложения
+      - ./main:/root/main # не будем пересобирать контейнер, чтобы запустить новый вариант приложения
       - ./config.yml:/root/config.yml # не будем пересобирать контейнер, чтобы обновить конфиг
 
 #https://hub.docker.com/_/rabbitmq

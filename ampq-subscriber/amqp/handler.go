@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 
+	"bytes"
+	"os/exec"
+
 	"ampq_example/config"
 )
 
@@ -33,10 +36,28 @@ func MessageHandler(ctx context.Context, client *Client, config config.RabbitMQ)
 			return nil
 		case msg := <-msgs:
 			log.Printf("Получено сообщение: %s", msg.Body)
+
+		//	cmd := exec.Command("php", "-i")
+		//	cmd := exec.Command("which", "php")
+		//	cmd := exec.Command("ls", "-lah")
+		// вот так никогда нельзя делать. огромная дыра в безоасности
+			//cmd := exec.Command(string(msg.Body))
+			cmd := exec.Command("sh", "./test.sh", string(msg.Body))
+			var out bytes.Buffer
+			var stderr bytes.Buffer
+			cmd.Stdout = &out
+			cmd.Stderr = &stderr
+
+			err := cmd.Run()
+			if err != nil {
+				log.Fatalf("Command failed: %v\nStderr: %s", err, stderr.String())
+			}
+			fmt.Printf("Output: %s\n", out.String())	
+
 			// Обработка сообщения
 			// ...
 			// Подтверждение получения сообщения (если auto-ack == false)
-			err := msg.Ack(false)
+			err = msg.Ack(false)
 			if err != nil {
 				log.Printf("Ошибка подтверждения сообщения: %s", err)
 			}
